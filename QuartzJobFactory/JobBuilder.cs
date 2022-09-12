@@ -21,6 +21,16 @@ public class JobBuilder<T> : JobBuilder where T : class, IJob
             "The generic type of JobBuilder<> allows compile-time helpers via lambdas. This cannot be done if the Job Type isn't a generic parameter.");
     }
 
+    public new static JobBuilder<T1> Create<T1>() where T1 : class, IJob
+    {
+        return JobBuilder<T1>.Create();
+    }
+
+    public new static JobBuilder<T1> CreateForAsync<T1>() where T1 : class, IJob
+    {
+        return JobBuilder<T1>.Create();
+    }
+
     /// <summary>
     /// Create a JobBuilder with which to define a <see cref="IJobDetail" />,
     /// and set the class name of the job to be executed.
@@ -43,7 +53,7 @@ public class JobBuilder<T> : JobBuilder where T : class, IJob
         b.OfType(typeof(T));
         return b;
     }
-    
+
     /// <summary>
     /// Add the given key-value pair to the JobDetail's <see cref="JobDataMap" />.
     /// </summary>
