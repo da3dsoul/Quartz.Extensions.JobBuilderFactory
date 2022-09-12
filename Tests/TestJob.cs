@@ -7,10 +7,13 @@ namespace Tests;
 
 public class TestJob : IJob
 {
+    // Lock only exists here to group log messages during parallel processing
+    private static readonly object Lock = new();
+
     private readonly ISchedulerFactory _schedulerFactory = null!;
     private readonly ILogger<TestJob> _logger = null!;
 
-    public int AnimeID { get; set; }
+    public int SomeID { get; set; }
     public bool Force { get; set; }
     
     public bool Cancel { get; set; }
@@ -27,16 +30,24 @@ public class TestJob : IJob
 
     public async Task Execute(IJobExecutionContext context)
     {
-        _logger.LogInformation("AnimeID is {AnimeID}", AnimeID);
-        _logger.LogInformation("Force is {Force}", Force);
-        _logger.LogInformation("Cancel is {Cancel}", Cancel);
+        lock (Lock)
+        {
+            _logger.LogInformation("Job Identity is : {Job} | {Group}", context.JobDetail.Key.Name,
+                context.JobDetail.Key.Group);
+            _logger.LogInformation("Trigger Identity is : {Trigger} | {Group}", context.Trigger.Key.Name,
+                context.Trigger.Key.Group);
+            _logger.LogInformation("SomeID is {ID}", SomeID);
+            _logger.LogInformation("Force is {Force}", Force);
+            _logger.LogInformation("Cancel is {Cancel}", Cancel);
+        }
+
         if (Cancel) Program.Token.Cancel();
         else
-            (await _schedulerFactory.GetScheduler()).ScheduleJob(JobBuilder<TestJob>.Create().UsingJobData(b =>
+            await (await _schedulerFactory.GetScheduler()).ScheduleJob(JobBuilder<TestJob>.Create().UsingJobData(b =>
             {
-                b.AnimeID = 14;
+                b.SomeID = 14;
                 b.Force = true;
                 b.Cancel = true;
-            }).WithIdentity("Test2").Build(), TriggerBuilder.Create().WithIdentity("Test2").StartNow().Build());
+            }).WithIdentity("Test2", context.JobDetail.Key.Group).Build(), TriggerBuilder.Create().WithIdentity("Test2", context.JobDetail.Key.Group).StartNow().Build());
     }
 }

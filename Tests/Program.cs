@@ -20,20 +20,20 @@ public static class Program
                 services.AddQuartz(o =>
                 {
                     o.UseMicrosoftDependencyInjectionJobFactory();
-                    o.AddJob<TestJob>(new JobKey("Test3", "AddQuartz"), builder =>
+                    o.AddJob<TestJob>(new JobKey("Test", "AddQuartz"), builder =>
                     {
                         builder.UsingJobData(a =>
                         {
-                            a.AnimeID = 43;
+                            a.SomeID = 43;
                             a.Force = true;
                         });
                     });
-                    o.AddTrigger(b => b.WithIdentity("Test3", "AddQuartz").ForJob("Test3", "AddQuartz").StartNow());
+                    o.AddTrigger(b => b.WithIdentity("Test", "AddQuartz").ForJob("Test", "AddQuartz").StartNow());
                 });
-                services.AddQuartzHostedService();
+                services.AddQuartzHostedService(a => a.WaitForJobsToComplete = true);
                 services.AddOptions<QuartzOptions>().Configure(o =>
                 {
-                    o.AddJob<TestJob>(a => a.UsingJobData(b => b.AnimeID = 12).WithIdentity("Test", "QuartzOptions"));
+                    o.AddJob<TestJob>(a => a.UsingJobData(b => b.SomeID = 12).WithIdentity("Test", "QuartzOptions"));
                     o.AddTrigger(c => c.WithIdentity("Test", "QuartzOptions").ForJob("Test", "QuartzOptions").StartNow());
                 });
             }).Build();
