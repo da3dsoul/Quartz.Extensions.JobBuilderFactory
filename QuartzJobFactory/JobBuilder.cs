@@ -15,10 +15,9 @@ public class JobBuilder<T> : JobBuilder where T : class, IJob
     /// </summary>
     /// <returns>a new JobBuilder</returns>
     [Obsolete("The generic type of JobBuilder<> allows compile-time helpers via lambdas. This cannot be done if the Job Type isn't a generic parameter.")]
-    public new static JobBuilder<T> Create(Type jobType)
+    public new static JobBuilder Create(Type jobType)
     {
-        throw new NotSupportedException(
-            "The generic type of JobBuilder<> allows compile-time helpers via lambdas. This cannot be done if the Job Type isn't a generic parameter.");
+        return JobBuilder.Create(jobType);
     }
 
     public new static JobBuilder<T1> Create<T1>() where T1 : class, IJob
