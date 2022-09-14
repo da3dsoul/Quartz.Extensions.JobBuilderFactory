@@ -24,7 +24,7 @@ public class TestJob : IJob
         _schedulerFactory = schedulerFactory;
     }
 
-    protected TestJob()
+    public TestJob()
     {
     }
 

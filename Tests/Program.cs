@@ -29,13 +29,16 @@ public static class Program
                         });
                     });
                     o.AddTrigger(b => b.WithIdentity("Test", "AddQuartz").ForJob("Test", "AddQuartz").StartNow());
+                    o.ScheduleJob<TestJob>(trigger => trigger.WithIdentity("Test", "ScheduleJob").StartNow(),
+                        job => job.UsingJobData(j => j.SomeID = 56));
                 });
                 services.AddQuartzHostedService(a => a.WaitForJobsToComplete = true);
                 services.AddOptions<QuartzOptions>().Configure(o =>
                 {
-                    o.AddJob<TestJob>(a => a.UsingJobData(b => b.SomeID = 12).WithIdentity("Test", "QuartzOptions"));
+                    o.AddJob<TestJob>(a => a.WithIdentity("Test", "QuartzOptions").UsingJobData(b => b.SomeID = 12));
                     o.AddTrigger(c => c.WithIdentity("Test", "QuartzOptions").ForJob("Test", "QuartzOptions").StartNow());
                 });
+                services.AddTransient<TestJob>();
             }).Build();
         await host.StartAsync();
         await host.WaitForShutdownAsync(Token.Token);
