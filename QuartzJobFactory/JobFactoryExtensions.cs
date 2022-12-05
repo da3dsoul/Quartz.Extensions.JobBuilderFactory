@@ -29,7 +29,6 @@ public static class JobFactoryExtensions
         var builder = JobBuilder<T>.Create();
         if (jobKey != null) builder.WithIdentity(jobKey);
 
-        builder.OfType(typeof(T));
         configure?.Invoke(builder);
         var jobDetail = builder.Build();
 
@@ -93,5 +92,20 @@ public static class JobFactoryExtensions
         services?.Configure<QuartzOptions>(x => { triggers.Invoke(x)?.Add(trigger); });
 
         return options;
+    }
+
+    /// <summary>
+    /// Start a job with TriggerBuilder.<see cref="TriggerBuilder.StartNow()"/> on the given scheduler
+    /// </summary>
+    /// <param name="scheduler">The scheduler to schedule the job with</param>
+    /// <param name="job">The job to schedule</param>
+    /// <param name="priority">It will go in order by start time, then choose the higher priority. <seealso cref="TriggerBuilder.WithPriority(int)"/></param>
+    /// <param name="token">The cancellation token</param>
+    /// <returns></returns>
+    public static async Task<DateTimeOffset> StartJob(this IScheduler scheduler, IJobDetail job, int priority = 0, CancellationToken token = default)
+    {
+        var triggerBuilder = TriggerBuilder.Create().StartNow();
+        if (priority != 0) triggerBuilder = triggerBuilder.WithPriority(priority);
+        return await scheduler.ScheduleJob(job, triggerBuilder.Build(), token);
     }
 }

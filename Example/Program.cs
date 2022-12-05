@@ -47,6 +47,12 @@ public static class Program
                 services.AddTransient<TestJob3>();
             }).Build();
         await host.StartAsync();
+
+        var services = host.Services;
+        var scheduler = await services.GetRequiredService<ISchedulerFactory>().GetScheduler();
+        await scheduler.StartJob(JobBuilder<TestJob2>.Create().UsingJobData(a => a.SomeID = 24).WithGeneratedIdentity()
+            .Build());
+
         await host.WaitForShutdownAsync(Token.Token);
     }
 }

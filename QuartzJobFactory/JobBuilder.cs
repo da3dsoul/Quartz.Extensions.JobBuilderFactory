@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using Quartz;
 using QuartzJobFactory.Attributes;
-using QuartzJobFactory.Utils;
 
 namespace QuartzJobFactory;
 
@@ -14,7 +13,7 @@ public class JobBuilder<T> : JobBuilder, IJobConfiguratorWithData<T> where T : I
     /// and set the class name of the job to be executed.
     /// </summary>
     /// <returns>a new JobBuilder</returns>
-    public new static JobBuilder<T> Create()
+    public new static IJobConfigurator<T> Create()
     {
         var b = new JobBuilder<T>();
         b.OfType(typeof(T));
