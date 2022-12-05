@@ -1,11 +1,13 @@
-﻿using Quartz;
+﻿using System.Reflection;
+using Quartz;
+using QuartzJobFactory.Attributes;
 using QuartzJobFactory.Utils;
 
 namespace QuartzJobFactory;
 
-public class JobBuilder<T> : JobBuilder where T : IJob, new()
+public class JobBuilder<T> : JobBuilder, IJobConfiguratorWithData<T> where T : IJob, new()
 {
-    // I would like a better way to handle these chains ie. not using new, but I don't think it's possible
+    private JobDataMap _jobDataMap = new JobDataMap();
 
     /// <summary>
     /// Create a JobBuilder with which to define a <see cref="IJobDetail" />,
@@ -16,46 +18,6 @@ public class JobBuilder<T> : JobBuilder where T : IJob, new()
     {
         var b = new JobBuilder<T>();
         b.OfType(typeof(T));
-        return b;
-    }
-
-    /// <summary>
-    /// Create a JobBuilder with which to define a <see cref="IJobDetail" />,
-    /// and set the class name of the job to be executed.
-    /// </summary>
-    /// <returns>a new JobBuilder</returns>
-    [Obsolete]
-    private new JobBuilder<T> Create(Type jobType)
-    {
-        var b = new JobBuilder<T>();
-        b.OfType(jobType);
-        return b;
-    }
-
-    /// <summary>
-    /// Create a JobBuilder with which to define a <see cref="IJobDetail" />,
-    /// and set the class name of the job to be executed.
-    /// </summary>
-    /// <returns>a new JobBuilder</returns>
-    [Obsolete]
-    private new JobBuilder<T1> Create<T1>() where T1 : IJob, new()
-    {
-        var b = new JobBuilder<T1>();
-        b.OfType(typeof(T1));
-        return b;
-    }
-
-
-    /// <summary>
-    /// Create a JobBuilder with which to define a <see cref="IJobDetail" />,
-    /// and set the class name of the job to be executed.
-    /// </summary>
-    /// <returns>a new JobBuilder</returns>
-    [Obsolete]
-    private new JobBuilder<T1> CreateForAsync<T1>() where T1 : IJob, new()
-    {
-        var b = new JobBuilder<T1>();
-        b.OfType(typeof(T1));
         return b;
     }
 
@@ -152,30 +114,36 @@ public class JobBuilder<T> : JobBuilder where T : IJob, new()
     }
 
     /// <summary>
+    /// Generate a <see cref="JobKey" /> to identify the JobDetail from the set JobDataMap using <see cref="JobKeyMemberAttribute"/> on members.
+    /// If none are marked, then all public properties will be considered, in the default order, with the member names.
+    /// Only non-default values will be added to the <see cref="JobKey"/>
+    /// </summary>
+    /// <remarks>
+    /// <para>If none of the 'withIdentity' methods are set on the JobBuilder,
+    /// then a random, unique JobKey will be generated.</para>
+    /// </remarks>
+    /// <returns>the updated JobBuilder</returns>
+    /// <seealso cref="JobKey" />
+    public IJobConfiguratorWithData<T> WithGeneratedIdentity(string? group = null)
+    {
+        var type = typeof(T);
+        var groupName = group ?? type.GetCustomAttribute<JobKeyGroupAttribute>()?.GroupName;
+
+        var key = JobKeyBuilder<T>.Create().WithGroup(groupName).UsingJobData(_jobDataMap).Build();
+        return WithIdentity(key);
+    }
+
+    /// <summary>
     /// Set the given (human-meaningful) description of the Job.
     /// </summary>
     /// <param name="description"> the description for the Job</param>
     /// <returns>the updated JobBuilder</returns>
     /// <seealso cref="IJobDetail.Description" />
-    public new JobBuilder<T> WithDescription(string? description)
+    public new IJobConfigurator<T> WithDescription(string? description)
     {
         base.WithDescription(description);
         return this;
     }
-
-    /*
-    /// <summary>
-    /// Set the JobType by name
-    /// </summary>
-    /// <param name="typeName">the Type name</param>
-    /// <returns>the updated JobBuilder</returns>
-    [Obsolete]
-    private new JobBuilder OfType(string typeName)
-    {
-        base.OfType(typeName);
-        return this;
-    }
-    */
 
     /// <summary>
     /// Set the class which will be instantiated and executed when a
@@ -210,7 +178,7 @@ public class JobBuilder<T> : JobBuilder where T : IJob, new()
     /// </remarks>
     /// <param name="shouldRecover"></param>
     /// <returns>the updated JobBuilder</returns>
-    public new JobBuilder<T> RequestRecovery(bool shouldRecover = true)
+    public new IJobConfigurator<T> RequestRecovery(bool shouldRecover = true)
     {
         base.RequestRecovery(shouldRecover);
         return this;
@@ -226,7 +194,7 @@ public class JobBuilder<T> : JobBuilder where T : IJob, new()
     /// <param name="durability">the value to set for the durability property.</param>
     ///<returns>the updated JobBuilder</returns>
     /// <seealso cref="IJobDetail.Durable" />
-    public new JobBuilder<T> StoreDurably(bool durability = true)
+    public new IJobConfigurator<T> StoreDurably(bool durability = true)
     {
         base.StoreDurably(durability);
         return this;
@@ -237,8 +205,9 @@ public class JobBuilder<T> : JobBuilder where T : IJob, new()
     /// </summary>
     ///<returns>the updated JobBuilder</returns>
     /// <seealso cref="IJobDetail.JobDataMap" />
-    public new JobBuilder<T> UsingJobData(string key, string? value)
+    public new IJobConfiguratorWithData<T> UsingJobData(string key, string? value)
     {
+        _jobDataMap.Put(key, value);
         base.UsingJobData(key, value);
         return this;
     }
@@ -248,8 +217,9 @@ public class JobBuilder<T> : JobBuilder where T : IJob, new()
     /// </summary>
     ///<returns>the updated JobBuilder</returns>
     /// <seealso cref="IJobDetail.JobDataMap" />
-    public new JobBuilder<T> UsingJobData(string key, int value)
+    public new IJobConfiguratorWithData<T> UsingJobData(string key, int value)
     {
+        _jobDataMap.Put(key, value);
         base.UsingJobData(key, value);
         return this;
     }
@@ -259,8 +229,9 @@ public class JobBuilder<T> : JobBuilder where T : IJob, new()
     /// </summary>
     ///<returns>the updated JobBuilder</returns>
     /// <seealso cref="IJobDetail.JobDataMap" />
-    public new JobBuilder<T> UsingJobData(string key, long value)
+    public new IJobConfiguratorWithData<T> UsingJobData(string key, long value)
     {
+        _jobDataMap.Put(key, value);
         base.UsingJobData(key, value);
         return this;
     }
@@ -270,8 +241,9 @@ public class JobBuilder<T> : JobBuilder where T : IJob, new()
     /// </summary>
     ///<returns>the updated JobBuilder</returns>
     /// <seealso cref="IJobDetail.JobDataMap" />
-    public new JobBuilder<T> UsingJobData(string key, float value)
+    public new IJobConfiguratorWithData<T> UsingJobData(string key, float value)
     {
+        _jobDataMap.Put(key, value);
         base.UsingJobData(key, value);
         return this;
     }
@@ -281,8 +253,9 @@ public class JobBuilder<T> : JobBuilder where T : IJob, new()
     /// </summary>
     ///<returns>the updated JobBuilder</returns>
     /// <seealso cref="IJobDetail.JobDataMap" />
-    public new JobBuilder<T> UsingJobData(string key, double value)
+    public new IJobConfiguratorWithData<T> UsingJobData(string key, double value)
     {
+        _jobDataMap.Put(key, value);
         base.UsingJobData(key, value);
         return this;
     }
@@ -292,8 +265,9 @@ public class JobBuilder<T> : JobBuilder where T : IJob, new()
     /// </summary>
     ///<returns>the updated JobBuilder</returns>
     /// <seealso cref="IJobDetail.JobDataMap" />
-    public new JobBuilder<T> UsingJobData(string key, bool value)
+    public new IJobConfiguratorWithData<T> UsingJobData(string key, bool value)
     {
+        _jobDataMap.Put(key, value);
         base.UsingJobData(key, value);
         return this;
     }
@@ -303,8 +277,9 @@ public class JobBuilder<T> : JobBuilder where T : IJob, new()
     /// </summary>
     ///<returns>the updated JobBuilder</returns>
     /// <seealso cref="IJobDetail.JobDataMap" />
-    public new JobBuilder<T> UsingJobData(string key, Guid value)
+    public new IJobConfiguratorWithData<T> UsingJobData(string key, Guid value)
     {
+        _jobDataMap.Put(key, value);
         base.UsingJobData(key, value);
         return this;
     }
@@ -314,8 +289,9 @@ public class JobBuilder<T> : JobBuilder where T : IJob, new()
     /// </summary>
     ///<returns>the updated JobBuilder</returns>
     /// <seealso cref="IJobDetail.JobDataMap" />
-    public new JobBuilder<T> UsingJobData(string key, char value)
+    public new IJobConfiguratorWithData<T> UsingJobData(string key, char value)
     {
+        _jobDataMap.Put(key, value);
         base.UsingJobData(key, value);
         return this;
     }
@@ -326,8 +302,9 @@ public class JobBuilder<T> : JobBuilder where T : IJob, new()
     /// </summary>
     ///<returns>the updated JobBuilder</returns>
     /// <seealso cref="IJobDetail.JobDataMap" />
-    public new JobBuilder<T> UsingJobData(JobDataMap newJobDataMap)
+    public new IJobConfiguratorWithData<T> UsingJobData(JobDataMap newJobDataMap)
     {
+        _jobDataMap.PutAll(newJobDataMap);
         base.UsingJobData(newJobDataMap);
         return this;
     }
@@ -337,23 +314,50 @@ public class JobBuilder<T> : JobBuilder where T : IJob, new()
     /// </summary>
     ///<returns>the updated JobBuilder</returns>
     /// <seealso cref="IJobDetail.JobDataMap" />
-    public JobBuilder<T> UsingJobData(Action<T> ctor)
+    public IJobConfiguratorWithData<T> UsingJobData(Action<T> ctor)
     {
-        var original = new T();
-        var temp = new T();
-        ctor.Invoke(temp);
-
-        var map = new JobDataMap();
-        var properties = TypePropertyCache.Get(typeof(T));
-
-        foreach (var property in properties)
-        {
-            var originalValue = property.GetValue(original);
-            var newValue = property.GetValue(temp);
-            if (!Equals(newValue, originalValue)) map.Put(property.Name, newValue!);
-        }
-
-        base.UsingJobData(map);
+        var map = JobDataMapBuilder.FromType(ctor);
+        UsingJobData(map);
         return this;
+    }
+}
+
+public class JobBuilder : Quartz.JobBuilder
+{
+    /// <summary>
+    /// Create a JobBuilder with which to define a <see cref="IJobDetail" />,
+    /// and set the class name of the job to be executed.
+    /// </summary>
+    /// <returns>a new JobBuilder</returns>
+    [Obsolete("Use the Generic JobBuilder to allow new features")]
+    private new JobBuilder Create(Type jobType)
+    {
+        throw new NotSupportedException("Use the Generic JobBuilder to allow new features");
+    }
+
+    /// <summary>
+    /// Create a JobBuilder with which to define a <see cref="IJobDetail" />,
+    /// and set the class name of the job to be executed.
+    /// </summary>
+    /// <returns>a new JobBuilder</returns>
+    private new JobBuilder<T> Create<T>() where T : IJob, new()
+    {
+        var b = new JobBuilder<T>();
+        b.OfType(typeof(T));
+        return b;
+    }
+
+
+    /// <summary>
+    /// Create a JobBuilder with which to define a <see cref="IJobDetail" />,
+    /// and set the class name of the job to be executed.
+    /// </summary>
+    /// <returns>a new JobBuilder</returns>
+    [Obsolete]
+    private new JobBuilder<T> CreateForAsync<T>() where T : IJob, new()
+    {
+        var b = new JobBuilder<T>();
+        b.OfType(typeof(T));
+        return b;
     }
 }

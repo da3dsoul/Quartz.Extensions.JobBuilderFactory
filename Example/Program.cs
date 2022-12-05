@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Quartz;
 using QuartzJobFactory;
 
-namespace Tests;
+namespace Example;
 
 public static class Program
 {
@@ -35,10 +35,16 @@ public static class Program
                 services.AddQuartzHostedService(a => a.WaitForJobsToComplete = true);
                 services.AddOptions<QuartzOptions>().Configure(o =>
                 {
-                    o.AddJob<TestJob>(a => a.WithIdentity("Test", "QuartzOptions").UsingJobData(b => b.SomeID = 12));
-                    o.AddTrigger(c => c.WithIdentity("Test", "QuartzOptions").ForJob("Test", "QuartzOptions").StartNow());
+                    var detail = o.AddJob<TestJob>(a => a.UsingJobData(b => b.SomeID = 12).WithIdentity("Test", "QuartzOptions"));
+                    o.AddTrigger(c => c.WithIdentity("Test", "QuartzOptions").ForJob(detail.Key).StartNow());
+                    var detail2 = o.AddJob<TestJob2>(a => a.UsingJobData(b => b.SomeID = 12).WithGeneratedIdentity("QuartzOptions"));
+                    o.AddTrigger(c => c.WithIdentity("Test2", "QuartzOptions").ForJob(detail2.Key).StartNow());
+                    var detail3 = o.AddJob<TestJob3>(a => a.UsingJobData(b => b.SomeID = 12).WithGeneratedIdentity("QuartzOptions"));
+                    o.AddTrigger(c => c.WithIdentity("Test3", "QuartzOptions").ForJob(detail3.Key).StartNow());
                 });
                 services.AddTransient<TestJob>();
+                services.AddTransient<TestJob2>();
+                services.AddTransient<TestJob3>();
             }).Build();
         await host.StartAsync();
         await host.WaitForShutdownAsync(Token.Token);
