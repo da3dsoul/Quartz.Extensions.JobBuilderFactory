@@ -9,7 +9,6 @@ public class JobBuilder<T> : IJobConfiguratorWithDataAndIdentity<T> where T : IJ
 {
     private JobKey? _key;
     private string? _description;
-    private Type _jobType = null!;
     private bool _durability;
     private bool _shouldRecover;
     private bool? _concurrentExecutionDisallowed;
@@ -32,10 +31,7 @@ public class JobBuilder<T> : IJobConfiguratorWithDataAndIdentity<T> where T : IJ
     /// <returns>a new JobBuilder</returns>
     public static IJobConfigurator<T> Create()
     {
-        return new JobBuilder<T>
-        {
-            _jobType = typeof(T)
-        };
+        return new JobBuilder<T>();
     }
 
     public void SetJobKey(JobKey jobKey)

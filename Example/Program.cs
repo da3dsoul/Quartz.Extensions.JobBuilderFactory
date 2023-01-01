@@ -26,7 +26,7 @@ public static class Program
                         {
                             a.SomeID = 43;
                             a.Force = true;
-                        }).Build();
+                        }).WithDefaultIdentity().Build();
                     });
                     o.AddTrigger(b => b.WithIdentity("Test", "AddQuartz").ForJob("Test", "AddQuartz").StartNow());
                     o.ScheduleJob<TestJob>(trigger => trigger.WithIdentity("Test", "ScheduleJob").StartNow().Build(),
