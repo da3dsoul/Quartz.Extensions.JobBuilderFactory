@@ -17,7 +17,7 @@ public static class JobFactoryExtensions
         var getJobDetails = new Func<object, List<IJobDetail>?>(t =>
             TypeFieldCache.Get<List<IJobDetail>>((typeof(QuartzOptions), "jobDetails"), t));
 
-        var detail = builder.Build();
+        var detail = builder.WithDefaultIdentity().Build();
         getJobDetails(options)?.Add(detail);
 
         return detail;
@@ -30,7 +30,7 @@ public static class JobFactoryExtensions
         if (jobKey != null) builder.WithIdentity(jobKey);
 
         configure?.Invoke(builder);
-        var jobDetail = builder.Build();
+        var jobDetail = builder.WithDefaultIdentity().Build();
 
         var services =
             TypePropertyCache.Get<IServiceCollection>((typeof(IServiceCollectionQuartzConfigurator), "Services"),
@@ -55,9 +55,9 @@ public static class JobFactoryExtensions
 
         var builder = JobBuilder<T>.Create();
         jobAction?.Invoke(builder);
-        var key = TypeFieldCache.Get<JobKey>((typeof(JobBuilder), "key"), builder);
+        var key = TypeFieldCache.Get<JobKey>((typeof(JobBuilder), "_key"), builder);
         var jobHasCustomKey = key is not null;
-        var jobDetail = builder.Build();
+        var jobDetail = builder.WithDefaultIdentity().Build();
 
         var services =
             TypePropertyCache.Get<IServiceCollection>((typeof(IServiceCollectionQuartzConfigurator), "Services"),
@@ -77,7 +77,8 @@ public static class JobFactoryExtensions
         // If no job key was specified, have the job key match the trigger key
         if (!jobHasCustomKey)
         {
-            ((JobDetailImpl)jobDetail).Key = new JobKey(trigger.Key.Name, trigger.Key.Group);
+            var keyProp = TypePropertyCache.Get(typeof(JobDetailImpl), "Key");
+            keyProp?.SetValue((JobDetailImpl)jobDetail, new JobKey(trigger.Key.Name, trigger.Key.Group));
 
             // Keep ITrigger.JobKey in sync with IJobDetail.Key
             ((IMutableTrigger)trigger).JobKey = jobDetail.Key;

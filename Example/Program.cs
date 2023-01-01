@@ -26,21 +26,21 @@ public static class Program
                         {
                             a.SomeID = 43;
                             a.Force = true;
-                        });
+                        }).Build();
                     });
                     o.AddTrigger(b => b.WithIdentity("Test", "AddQuartz").ForJob("Test", "AddQuartz").StartNow());
-                    o.ScheduleJob<TestJob>(trigger => trigger.WithIdentity("Test", "ScheduleJob").StartNow(),
+                    o.ScheduleJob<TestJob>(trigger => trigger.WithIdentity("Test", "ScheduleJob").StartNow().Build(),
                         job => job.UsingJobData(j => j.SomeID = 56));
                 });
                 services.AddQuartzHostedService(a => a.WaitForJobsToComplete = true);
                 services.AddOptions<QuartzOptions>().Configure(o =>
                 {
-                    var detail = o.AddJob<TestJob>(a => a.UsingJobData(b => b.SomeID = 12).WithIdentity("Test", "QuartzOptions"));
-                    o.AddTrigger(c => c.WithIdentity("Test", "QuartzOptions").ForJob(detail.Key).StartNow());
-                    var detail2 = o.AddJob<TestJob2>(a => a.UsingJobData(b => b.SomeID = 12).WithGeneratedIdentity("QuartzOptions"));
-                    o.AddTrigger(c => c.WithIdentity("Test2", "QuartzOptions").ForJob(detail2.Key).StartNow());
-                    var detail3 = o.AddJob<TestJob3>(a => a.UsingJobData(b => b.SomeID = 12).WithGeneratedIdentity("QuartzOptions"));
-                    o.AddTrigger(c => c.WithIdentity("Test3", "QuartzOptions").ForJob(detail3.Key).StartNow());
+                    var detail = o.AddJob<TestJob>(a => a.UsingJobData(b => b.SomeID = 12).WithIdentity("Test", "QuartzOptions").Build());
+                    o.AddTrigger(c => c.WithIdentity("Test", "QuartzOptions").ForJob(detail.Key).StartNow().Build());
+                    var detail2 = o.AddJob<TestJob2>(a => a.UsingJobData(b => b.SomeID = 12).WithGeneratedIdentity("QuartzOptions").Build());
+                    o.AddTrigger(c => c.WithIdentity("Test2", "QuartzOptions").ForJob(detail2.Key).StartNow().Build());
+                    var detail3 = o.AddJob<TestJob3>(a => a.UsingJobData(b => b.SomeID = 12).WithGeneratedIdentity("QuartzOptions").Build());
+                    o.AddTrigger(c => c.WithIdentity("Test3", "QuartzOptions").ForJob(detail3.Key).StartNow().Build());
                 });
                 services.AddTransient<TestJob>();
                 services.AddTransient<TestJob2>();
