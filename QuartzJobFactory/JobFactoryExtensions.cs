@@ -14,8 +14,8 @@ public static class JobFactoryExtensions
         var builder = JobBuilder<T>.Create();
         configure(builder);
 
-        var getJobDetails = new Func<object, List<IJobDetail>?>(t =>
-            TypeFieldCache.Get<List<IJobDetail>>((typeof(QuartzOptions), "jobDetails"), t));
+        var getJobDetails = new Func<QuartzOptions, List<IJobDetail>?>(t =>
+            TypeFieldCache.Get<List<IJobDetail>>("jobDetails", t));
 
         var detail = builder.WithDefaultIdentity().Build();
         getJobDetails(options)?.Add(detail);
@@ -32,11 +32,9 @@ public static class JobFactoryExtensions
         configure?.Invoke(builder);
         var jobDetail = builder.WithDefaultIdentity().Build();
 
-        var services =
-            TypePropertyCache.Get<IServiceCollection>((typeof(IServiceCollectionQuartzConfigurator), "Services"),
-                options);
-        var jobDetails = new Func<object, List<IJobDetail>?>(t =>
-            TypeFieldCache.Get<List<IJobDetail>>((typeof(QuartzOptions), "jobDetails"), t));
+        var services = TypePropertyCache.Get<IServiceCollection>("Services", options);
+        var jobDetails =
+            new Func<QuartzOptions, List<IJobDetail>?>(t => TypeFieldCache.Get<List<IJobDetail>>("jobDetails", t));
 
         services?.Configure<QuartzOptions>(x => { jobDetails.Invoke(x)?.Add(jobDetail); });
 
@@ -55,16 +53,13 @@ public static class JobFactoryExtensions
 
         var builder = JobBuilder<T>.Create();
         jobAction?.Invoke(builder);
-        var key = TypeFieldCache.Get<JobKey>((typeof(JobBuilder), "key"), builder) ??
-                  TypeFieldCache.Get<JobKey>((typeof(JobBuilder), "_key"), builder);
+        var key = TypeFieldCache.Get<JobKey>("_key", builder);
         var jobHasCustomKey = key is not null;
         var jobDetail = builder.WithDefaultIdentity().Build();
 
-        var services =
-            TypePropertyCache.Get<IServiceCollection>((typeof(IServiceCollectionQuartzConfigurator), "Services"),
-                options);
-        var jobDetails = new Func<object, List<IJobDetail>?>(t =>
-            TypeFieldCache.Get<List<IJobDetail>>((typeof(QuartzOptions), "jobDetails"), t));
+        var services = TypePropertyCache.Get<IServiceCollection>("Services", options);
+        var jobDetails =
+            new Func<QuartzOptions, List<IJobDetail>?>(t => TypeFieldCache.Get<List<IJobDetail>>("jobDetails", t));
 
         services?.Configure<QuartzOptions>(x => { jobDetails.Invoke(x)?.Add(jobDetail); });
 
@@ -88,8 +83,7 @@ public static class JobFactoryExtensions
         if (trigger.JobKey is null || !trigger.JobKey.Equals(jobDetail.Key))
             throw new InvalidOperationException("Trigger doesn't refer to job being scheduled");
 
-        var triggers = new Func<object, List<ITrigger>?>(t =>
-            TypeFieldCache.Get<List<ITrigger>>((typeof(QuartzOptions), "triggers"), t));
+        var triggers = new Func<QuartzOptions, List<ITrigger>?>(t => TypeFieldCache.Get<List<ITrigger>>("triggers", t));
 
         services?.Configure<QuartzOptions>(x => { triggers.Invoke(x)?.Add(trigger); });
 

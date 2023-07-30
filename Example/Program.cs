@@ -50,10 +50,10 @@ public static class Program
 
         var services = host.Services;
         var scheduler = await services.GetRequiredService<ISchedulerFactory>().GetScheduler();
-        await scheduler.StartJob(JobBuilder<TestJob2>.Create().UsingJobData(a => a.SomeID = 24).WithGeneratedIdentity()
+        await scheduler.StartJob(JobBuilder<TestJob2>.Create().UsingJobData(a => a.SomeID = 24).WithGeneratedIdentity("With24")
             .Build());
         
-        await scheduler.StartJob(JobBuilder<TestJob2>.Create().WithGeneratedIdentity()
+        await scheduler.StartJob(JobBuilder<TestJob2>.Create().WithGeneratedIdentity("Empty")
             .Build());
 
         await host.WaitForShutdownAsync(Token.Token);

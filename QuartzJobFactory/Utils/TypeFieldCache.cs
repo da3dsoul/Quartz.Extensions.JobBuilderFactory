@@ -42,10 +42,26 @@ public static class TypeFieldCache
         return fieldCache.GetOrAdd((type, name), getter);
     }
 
-    public static T? Get<T>((Type Type, string Name) key, object arg) where T : class
+    public static T? Get<T>(string name, object arg) where T : class
     {
-        return fieldCache.GetOrAdd((key.Type, key.Name),
-                t => t.Type.GetField(key.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-            ?.GetValue(arg) as T;
+        return fieldCache.GetOrAdd((arg.GetType(), name),
+                t => GetField<T>(arg, name))?.GetValue(arg) as T;
+    }
+
+    private static FieldInfo GetField<T>(object obj, string fieldName)
+    {
+        if (obj == null)
+            throw new ArgumentNullException(nameof(obj));
+
+        var field = obj.GetType().GetField(fieldName, BindingFlags.Public |
+                                                      BindingFlags.NonPublic |
+                                                      BindingFlags.Instance);
+
+        if (field == null) return null;
+
+        if (!typeof(T).IsAssignableFrom(field.FieldType))
+            throw new InvalidOperationException($"Field type and requested type are not compatible: {typeof(T).Name}, {field.FieldType.Name}");
+
+        return field;
     }
 }

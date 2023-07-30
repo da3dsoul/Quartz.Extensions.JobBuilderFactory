@@ -43,10 +43,25 @@ public static class TypePropertyCache
         return propertyCache.GetOrAdd((type, name), getter);
     }
 
-    public static T? Get<T>((Type Type, string Name) key, object arg) where T : class
+    public static T? Get<T>(string name, object arg) where T : class
     {
-        return propertyCache.GetOrAdd((key.Type, key.Name),
-            t => t.Type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                .FirstOrDefault(a => a.Name == key.Name))?.GetValue(arg) as T;
+        return propertyCache.GetOrAdd((arg.GetType(), name),
+            t => GetProperty<T>(arg, name))?.GetValue(arg) as T;
+    }
+
+    private static PropertyInfo? GetProperty<T>(object obj, string propertyName)
+    {
+        if (obj == null)
+            throw new ArgumentNullException(nameof(obj));
+
+        var property = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+            .FirstOrDefault(a => a.Name.Split('.').LastOrDefault() == propertyName);
+
+        if (property == null) return null;
+
+        if (!typeof(T).IsAssignableFrom(property.PropertyType))
+            throw new InvalidOperationException($"Property type and requested type are not compatible: {typeof(T).Name}, {property.PropertyType.Name}");
+
+        return property;
     }
 }
