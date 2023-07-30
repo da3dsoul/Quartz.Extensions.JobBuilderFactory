@@ -5,7 +5,7 @@ using QuartzJobFactory.Utils;
 
 namespace QuartzJobFactory;
 
-public class JobBuilder<T> : IJobConfiguratorWithDataAndIdentity<T> where T : IJob, new()
+public class JobBuilder<T> : IJobConfiguratorWithDataAndIdentity<T>, IJobConfiguratorWithGeneratedIdentity<T> where T : IJob, new()
 {
     private JobKey? _key;
     private string? _description;

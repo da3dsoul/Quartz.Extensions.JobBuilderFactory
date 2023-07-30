@@ -25,6 +25,26 @@ public static class IdentityExtensions
         var key = JobKeyBuilder<T>.Create().WithGroup(groupName).UsingJobData(jobConfigurator.GetJobData()).Build();
         return jobConfigurator.WithIdentity(key);
     }
+    
+    /// <summary>
+    /// Generate a <see cref="JobKey" /> to identify the JobDetail from the set JobDataMap using <see cref="JobKeyMemberAttribute"/> on members.
+    /// If none are marked, then all public properties will be considered, in the default order, with the member names.
+    /// Only non-default values will be added to the <see cref="JobKey"/>
+    /// </summary>
+    /// <remarks>
+    /// <para>If none of the 'withIdentity' methods are set on the JobBuilder,
+    /// then a random, unique JobKey will be generated.</para>
+    /// </remarks>
+    /// <returns>the updated JobBuilder</returns>
+    /// <seealso cref="JobKey" />
+    public static IJobConfiguratorWithGeneratedIdentity<T> WithGeneratedIdentity<T>(this IJobConfigurator<T> jobConfigurator, string? group = null) where T : IJob, new()
+    {
+        var type = typeof(T);
+        var groupName = group ?? type.GetCustomAttribute<JobKeyGroupAttribute>()?.GroupName;
+
+        var key = JobKeyBuilder<T>.Create().WithGroup(groupName).Build();
+        return (IJobConfiguratorWithGeneratedIdentity<T>)jobConfigurator.WithIdentity(key);
+    }
 
     /// <summary>
     /// Use a <see cref="JobKey" /> with the given name and default group to
@@ -34,6 +54,7 @@ public static class IdentityExtensions
     /// <para>If none of the 'withIdentity' methods are set on the JobBuilder,
     /// then a random, unique JobKey will be generated.</para>
     /// </remarks>
+    /// <param name="jobConfigurator"></param>
     /// <param name="name">the name element for the Job's JobKey</param>
     /// <returns>the updated JobBuilder</returns>
     /// <seealso cref="JobKey" /> 
@@ -53,6 +74,7 @@ public static class IdentityExtensions
     /// <para>If none of the 'withIdentity' methods are set on the JobBuilder,
     /// then a random, unique JobKey will be generated.</para>
     /// </remarks>
+    /// <param name="jobConfigurator"></param>
     /// <param name="name">the name element for the Job's JobKey</param>
     /// <param name="group"> the group element for the Job's JobKey</param>
     /// <returns>the updated JobBuilder</returns>
@@ -72,6 +94,7 @@ public static class IdentityExtensions
     /// <para>If none of the 'withIdentity' methods are set on the JobBuilder,
     /// then a random, unique JobKey will be generated.</para>
     /// </remarks>
+    /// <param name="jobConfigurator"></param>
     /// <param name="key">the Job's JobKey</param>
     /// <returns>the updated JobBuilder</returns>
     /// <seealso cref="JobKey" />
@@ -91,6 +114,7 @@ public static class IdentityExtensions
     /// <para>If none of the 'withIdentity' methods are set on the JobBuilder,
     /// then a random, unique JobKey will be generated.</para>
     /// </remarks>
+    /// <param name="jobConfigurator"></param>
     /// <param name="name">the name element for the Job's JobKey</param>
     /// <returns>the updated JobBuilder</returns>
     /// <seealso cref="JobKey" /> 
@@ -110,6 +134,7 @@ public static class IdentityExtensions
     /// <para>If none of the 'withIdentity' methods are set on the JobBuilder,
     /// then a random, unique JobKey will be generated.</para>
     /// </remarks>
+    /// <param name="jobConfigurator"></param>
     /// <param name="name">the name element for the Job's JobKey</param>
     /// <param name="group"> the group element for the Job's JobKey</param>
     /// <returns>the updated JobBuilder</returns>
@@ -129,6 +154,7 @@ public static class IdentityExtensions
     /// <para>If none of the 'withIdentity' methods are set on the JobBuilder,
     /// then a random, unique JobKey will be generated.</para>
     /// </remarks>
+    /// <param name="jobConfigurator"></param>
     /// <param name="key">the Job's JobKey</param>
     /// <returns>the updated JobBuilder</returns>
     /// <seealso cref="JobKey" />

@@ -93,6 +93,8 @@ public interface IJobConfiguratorWithIdentity<T> : IJobConfigurator<T> where T :
     new IJobDetail Build();
 }
 
+public interface IJobConfiguratorWithGeneratedIdentity<T> : IJobConfiguratorWithIdentity<T> where T : IJob, new() { }
+
 public interface IJobConfiguratorWithDataAndIdentity<T> : IJobConfiguratorWithData<T>, IJobConfiguratorWithIdentity<T> where T : IJob, new()
 {
     /// <summary>

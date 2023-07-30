@@ -11,7 +11,7 @@ public class JobKeyBuilder<T> where T : IJob, new()
     private string? _group;
     
     /// <summary>
-    /// Create a JobKeyBuilder with which to define a <see cref="JobKey" /> that matches <see cref="JobBuilder{T}.WithGeneratedIdentity(string)"/>
+    /// Create a JobKeyBuilder with which to define a <see cref="JobKey" /> that matches <see cref="IdentityExtensions.WithGeneratedIdentity{T}(string)"/>
     /// </summary>
     /// <returns>a new JobKeyBuilder</returns>
     public static JobKeyBuilder<T> Create()
@@ -168,8 +168,7 @@ public class JobKeyBuilder<T> where T : IJob, new()
         foreach (var (member, attribute) in members)
         {
             var id = attribute?.Id ?? member.Name;
-            if (!_jobDataMap.ContainsKey(member.Name)) continue;
-            var value = _jobDataMap[member.Name].ToString();
+            if (!_jobDataMap.TryGetValue(member.Name, out var value)) continue;
             builder.Add(id + ":" + value);
         }
 
