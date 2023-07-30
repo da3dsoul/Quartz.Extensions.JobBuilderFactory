@@ -17,7 +17,7 @@ public static class IdentityExtensions
     /// </remarks>
     /// <returns>the updated JobBuilder</returns>
     /// <seealso cref="JobKey" />
-    public static IJobConfiguratorWithDataAndIdentity<T> WithGeneratedIdentity<T>(this IJobConfiguratorWithData<T> jobConfigurator, string? group = null) where T : IJob, new()
+    public static IJobConfiguratorWithDataAndIdentity<T> WithGeneratedIdentity<T>(this IJobConfiguratorWithData<T> jobConfigurator, string? group = null) where T : class, IJob
     {
         var type = typeof(T);
         var groupName = group ?? type.GetCustomAttribute<JobKeyGroupAttribute>()?.GroupName;
@@ -37,7 +37,7 @@ public static class IdentityExtensions
     /// </remarks>
     /// <returns>the updated JobBuilder</returns>
     /// <seealso cref="JobKey" />
-    public static IJobConfiguratorWithGeneratedIdentity<T> WithGeneratedIdentity<T>(this IJobConfigurator<T> jobConfigurator, string? group = null) where T : IJob, new()
+    public static IJobConfiguratorWithGeneratedIdentity<T> WithGeneratedIdentity<T>(this IJobConfigurator<T> jobConfigurator, string? group = null) where T : class, IJob
     {
         var type = typeof(T);
         var groupName = group ?? type.GetCustomAttribute<JobKeyGroupAttribute>()?.GroupName;
@@ -60,7 +60,7 @@ public static class IdentityExtensions
     /// <seealso cref="JobKey" /> 
     /// <seealso cref="IJobDetail.Key" />
     public static IJobConfiguratorWithIdentity<T> WithIdentity<T>(this IJobConfigurator<T> jobConfigurator, string name)
-        where T : IJob, new()
+        where T : class, IJob
     {
         jobConfigurator.SetJobKey(new JobKey(name));
         return (IJobConfiguratorWithIdentity<T>)jobConfigurator;
@@ -81,7 +81,7 @@ public static class IdentityExtensions
     /// <seealso cref="JobKey" />
     /// <seealso cref="IJobDetail.Key" />
     public static IJobConfiguratorWithIdentity<T> WithIdentity<T>(this IJobConfigurator<T> jobConfigurator, string name, string group)
-        where T : IJob, new()
+        where T : class, IJob
     {
         jobConfigurator.SetJobKey(new JobKey(name, group));
         return (IJobConfiguratorWithIdentity<T>)jobConfigurator;
@@ -100,7 +100,7 @@ public static class IdentityExtensions
     /// <seealso cref="JobKey" />
     /// <seealso cref="IJobDetail.Key" />
     public static IJobConfiguratorWithIdentity<T> WithIdentity<T>(this IJobConfigurator<T> jobConfigurator, JobKey key)
-        where T : IJob, new()
+        where T : class, IJob
     {
         jobConfigurator.SetJobKey(key);
         return (IJobConfiguratorWithIdentity<T>)jobConfigurator;
@@ -120,7 +120,7 @@ public static class IdentityExtensions
     /// <seealso cref="JobKey" /> 
     /// <seealso cref="IJobDetail.Key" />
     public static IJobConfiguratorWithDataAndIdentity<T> WithIdentity<T>(this IJobConfiguratorWithData<T> jobConfigurator, string name)
-        where T : IJob, new()
+        where T : class, IJob
     {
         jobConfigurator.SetJobKey(new JobKey(name));
         return (IJobConfiguratorWithDataAndIdentity<T>)jobConfigurator;
@@ -141,7 +141,7 @@ public static class IdentityExtensions
     /// <seealso cref="JobKey" />
     /// <seealso cref="IJobDetail.Key" />
     public static IJobConfiguratorWithDataAndIdentity<T> WithIdentity<T>(this IJobConfiguratorWithData<T> jobConfigurator, string name, string group)
-        where T : IJob, new()
+        where T : class, IJob
     {
         jobConfigurator.SetJobKey(new JobKey(name, group));
         return (IJobConfiguratorWithDataAndIdentity<T>)jobConfigurator;
@@ -160,7 +160,7 @@ public static class IdentityExtensions
     /// <seealso cref="JobKey" />
     /// <seealso cref="IJobDetail.Key" />
     public static IJobConfiguratorWithDataAndIdentity<T> WithIdentity<T>(this IJobConfiguratorWithData<T> jobConfigurator, JobKey key)
-        where T : IJob, new()
+        where T : class, IJob
     {
         jobConfigurator.SetJobKey(key);
         return (IJobConfiguratorWithDataAndIdentity<T>)jobConfigurator;
@@ -174,7 +174,7 @@ public static class IdentityExtensions
     /// then a random, unique JobKey will be generated.</para>
     /// </remarks>
     public static IJobConfiguratorWithIdentity<T> WithDefaultIdentity<T>(this IJobConfigurator<T> jobConfigurator)
-        where T : IJob, new()
+        where T : class, IJob
     {
         return (IJobConfiguratorWithIdentity<T>)jobConfigurator;
     }
@@ -187,7 +187,7 @@ public static class IdentityExtensions
     /// then a random, unique JobKey will be generated.</para>
     /// </remarks>
     public static IJobConfiguratorWithDataAndIdentity<T> WithDefaultIdentity<T>(this IJobConfiguratorWithData<T> jobConfigurator)
-        where T : IJob, new()
+        where T : class, IJob
     {
         return (IJobConfiguratorWithDataAndIdentity<T>)jobConfigurator;
     }

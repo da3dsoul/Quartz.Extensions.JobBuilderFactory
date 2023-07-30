@@ -5,7 +5,7 @@ using QuartzJobFactory.Utils;
 
 namespace QuartzJobFactory;
 
-public class JobKeyBuilder<T> where T : IJob, new()
+public class JobKeyBuilder<T> where T : class, IJob
 {
     private JobDataMap _jobDataMap = new JobDataMap();
     private string? _group;

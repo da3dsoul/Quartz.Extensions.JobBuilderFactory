@@ -52,6 +52,9 @@ public static class Program
         var scheduler = await services.GetRequiredService<ISchedulerFactory>().GetScheduler();
         await scheduler.StartJob(JobBuilder<TestJob2>.Create().UsingJobData(a => a.SomeID = 24).WithGeneratedIdentity()
             .Build());
+        
+        await scheduler.StartJob(JobBuilder<TestJob2>.Create().WithGeneratedIdentity()
+            .Build());
 
         await host.WaitForShutdownAsync(Token.Token);
     }

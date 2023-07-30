@@ -1,14 +1,16 @@
-﻿using Quartz;
+﻿using System.Reflection;
+using Quartz;
 using QuartzJobFactory.Utils;
 
 namespace QuartzJobFactory;
 
 public static class JobDataMapBuilder
 {
-    public static JobDataMap FromType<T>(Action<T> ctor) where T : IJob, new()
+    public static JobDataMap FromType<T>(Action<T> ctor) where T : class, IJob
     {
-        var original = new T();
-        var temp = new T();
+        var constructor = TypeConstructorCache.Get(typeof(T));
+        var original = constructor.Invoke(null) as T;
+        var temp = constructor.Invoke(null) as T;
         ctor.Invoke(temp);
 
         var map = new JobDataMap();

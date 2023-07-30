@@ -14,7 +14,7 @@
         <RepositoryUrl>https://github.com/da3dsoul/Quartz.Extensions.JobBuilderFactory</RepositoryUrl>
         <PackageTags>quartz, quartznet, quartz.net, DependencyInjection, scheduler</PackageTags>
         <PackageReleaseNotes>Initial Release</PackageReleaseNotes>
-        <Version>2.1.0.0</Version>
+        <Version>2.1.0.1</Version>
     </PropertyGroup>
 
     <ItemGroup>

@@ -9,7 +9,7 @@ namespace QuartzJobFactory;
 public static class JobFactoryExtensions
 {
     public static IJobDetail AddJob<T>(this QuartzOptions options, Action<IJobConfigurator<T>> configure)
-        where T : IJob, new()
+        where T : class, IJob
     {
         var builder = JobBuilder<T>.Create();
         configure(builder);
@@ -24,7 +24,7 @@ public static class JobFactoryExtensions
     }
 
     public static IServiceCollectionQuartzConfigurator AddJob<T>(this IServiceCollectionQuartzConfigurator options,
-        JobKey? jobKey = null, Action<IJobConfigurator<T>>? configure = null) where T : IJob, new()
+        JobKey? jobKey = null, Action<IJobConfigurator<T>>? configure = null) where T : class, IJob
     {
         var builder = JobBuilder<T>.Create();
         if (jobKey != null) builder.WithIdentity(jobKey);
@@ -49,7 +49,7 @@ public static class JobFactoryExtensions
     public static IServiceCollectionQuartzConfigurator ScheduleJob<T>(
         this IServiceCollectionQuartzConfigurator options,
         Action<TriggerBuilder> triggerAction,
-        Action<IJobConfigurator<T>>? jobAction = null) where T : IJob, new()
+        Action<IJobConfigurator<T>>? jobAction = null) where T : class, IJob
     {
         if (triggerAction is null) throw new ArgumentNullException(nameof(triggerAction));
 

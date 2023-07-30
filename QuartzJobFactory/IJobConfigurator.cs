@@ -4,7 +4,7 @@ namespace QuartzJobFactory;
 
 public interface IJobConfigurator { }
 
-public interface IJobConfigurator<T> : IJobConfigurator where T : IJob, new()
+public interface IJobConfigurator<T> : IJobConfigurator where T : class, IJob
 {
     void SetJobKey(JobKey key);
     /// <summary>
@@ -82,9 +82,9 @@ public interface IJobConfigurator<T> : IJobConfigurator where T : IJob, new()
     public IJobConfigurator<T> PersistJobDataAfterExecution(bool persistJobDataAfterExecution = true);
 }
 
-public interface IJobConfiguratorWithData<T> : IJobConfigurator<T> where T : IJob, new() { }
+public interface IJobConfiguratorWithData<T> : IJobConfigurator<T> where T : class, IJob { }
 
-public interface IJobConfiguratorWithIdentity<T> : IJobConfigurator<T> where T : IJob, new()
+public interface IJobConfiguratorWithIdentity<T> : IJobConfigurator<T> where T : class, IJob
 {
     /// <summary>
     /// Produce the <see cref="IJobDetail" /> instance defined by this IJobConfigurator.
@@ -93,9 +93,9 @@ public interface IJobConfiguratorWithIdentity<T> : IJobConfigurator<T> where T :
     new IJobDetail Build();
 }
 
-public interface IJobConfiguratorWithGeneratedIdentity<T> : IJobConfiguratorWithIdentity<T> where T : IJob, new() { }
+public interface IJobConfiguratorWithGeneratedIdentity<T> : IJobConfiguratorWithIdentity<T> where T : class, IJob { }
 
-public interface IJobConfiguratorWithDataAndIdentity<T> : IJobConfiguratorWithData<T>, IJobConfiguratorWithIdentity<T> where T : IJob, new()
+public interface IJobConfiguratorWithDataAndIdentity<T> : IJobConfiguratorWithData<T>, IJobConfiguratorWithIdentity<T> where T : class, IJob
 {
     /// <summary>
     /// Produce the <see cref="IJobDetail" /> instance defined by this IJobConfigurator.
