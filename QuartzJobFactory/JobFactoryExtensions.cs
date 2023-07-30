@@ -55,7 +55,8 @@ public static class JobFactoryExtensions
 
         var builder = JobBuilder<T>.Create();
         jobAction?.Invoke(builder);
-        var key = TypeFieldCache.Get<JobKey>((typeof(JobBuilder), "_key"), builder);
+        var key = TypeFieldCache.Get<JobKey>((typeof(JobBuilder), "key"), builder) ??
+                  TypeFieldCache.Get<JobKey>((typeof(JobBuilder), "_key"), builder);
         var jobHasCustomKey = key is not null;
         var jobDetail = builder.WithDefaultIdentity().Build();
 
