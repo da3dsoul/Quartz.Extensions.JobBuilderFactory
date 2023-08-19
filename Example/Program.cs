@@ -56,6 +56,12 @@ public static class Program
         await scheduler.StartJob(JobBuilder<TestJob2>.Create().WithGeneratedIdentity("Empty")
             .Build());
 
+        await scheduler.StartJob(JobBuilder<LongTestJob>.Create().DisallowConcurrentExecution().WithIdentity("LongTest", "LongTest").Build());
+        await Task.Delay(1000);
+        await scheduler.StartJob(JobBuilder<LongTestJob>.Create().DisallowConcurrentExecution().WithIdentity("LongTest", "LongTest").Build());
+        await Task.Delay(9000);
+        await scheduler.StartJob(JobBuilder<LongTestJob>.Create().DisallowConcurrentExecution().WithIdentity("LongTest1", "LongTest").Build());
+
         await host.WaitForShutdownAsync(Token.Token);
     }
 }

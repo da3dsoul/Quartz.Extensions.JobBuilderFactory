@@ -96,12 +96,31 @@ public static class JobFactoryExtensions
     /// <param name="scheduler">The scheduler to schedule the job with</param>
     /// <param name="job">The job to schedule</param>
     /// <param name="priority">It will go in order by start time, then choose the higher priority. <seealso cref="TriggerBuilder.WithPriority(int)"/></param>
+    /// <param name="replaceExisting">Replace the queued trigger if it's still waiting to execute. Default false</param>
     /// <param name="token">The cancellation token</param>
     /// <returns></returns>
-    public static async Task<DateTimeOffset> StartJob(this IScheduler scheduler, IJobDetail job, int priority = 0, CancellationToken token = default)
+    public static async Task<DateTimeOffset> StartJob(this IScheduler scheduler, IJobDetail job, int priority = 0, bool replaceExisting = false, CancellationToken token = default)
     {
+        // if it's running, then ignore
+        var currentJobs = await scheduler.GetCurrentlyExecutingJobs(token);
+        if (currentJobs.Any(a => Equals(a.JobDetail.Key, job.Key))) return DateTimeOffset.Now;
+
         var triggerBuilder = TriggerBuilder.Create().StartNow();
         if (priority != 0) triggerBuilder = triggerBuilder.WithPriority(priority);
+
+        if (await scheduler.CheckExists(job.Key, token))
+        {
+            // get waiting triggers
+            var triggers = (await scheduler.GetTriggersOfJob(job.Key, token)).Select(a => a.GetNextFireTimeUtc())
+                .Where(a => a != null).Select(a => a!.Value).ToList();
+
+            // we are not set to replace the job, then return the first scheduled time
+            if (triggers.Any() && !replaceExisting) return triggers.Min();
+
+            // since we are replacing it, it will remove the triggers, as well
+            await scheduler.DeleteJob(job.Key, token);
+        }
+
         return await scheduler.ScheduleJob(job, triggerBuilder.Build(), token);
     }
 }
